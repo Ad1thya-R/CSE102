@@ -93,14 +93,5 @@ def not_angry(n):
         return not_angry(n - 1) + not_angry(n - 2)
 
 
-##Generators
 
-##9.Fibonacci Sequence generator
-
-def fibs():
-    '''generator for fibonacci sequence'''
-    r0, r1 = 0, 1
-    while True:
-        yield r0
-        r0, r1 = r1, r0 + r1
 
