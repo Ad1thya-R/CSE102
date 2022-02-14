@@ -61,7 +61,7 @@ def choose2(l,k):
             if y not in z:
                 if len(y)==k:
                     z.append(y)
-        return (len(z),z)
+        return z
 print(choose2(list(range(10)),5))
 '''Obviously this is an extremely inefficient solution, but it worked first try'''
 
@@ -69,7 +69,7 @@ def permutations2(A,k):
         r = [[]]
         for i in range(k):
             r = [[a] + b for a in A for b in [i for i in r if a not in i]]
-        return len(r),r
+        return r
 
 print(permutations2([1,2,3,4],4))
 ##multisets
