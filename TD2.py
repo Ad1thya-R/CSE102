@@ -12,9 +12,11 @@ def binom(n, k):
     else:
         return binom(n - 1, k) + binom(n - 1, k - 1)
 
-from pprint import pprint
+
 lista = []
 iteraciones = [0]
+
+
 def choose(l, k):
     if k == len(l):
         if not l in lista:
@@ -26,65 +28,79 @@ def choose(l, k):
         result = choose(aux, k)
         iteraciones[0] += 1
         if not result in lista and result:
-            lista.append( result)
-
+            lista.append(result)
 
 
 def permutations(l):
     if not l:
         return [[]]
-    a=[]
+    a = []
     for i in l:
-        temp=l[:]
+        temp = l[:]
         temp.remove(i)
-        a.extend([i]+j for j in permutations(temp))
+        a.extend([i] + j for j in permutations(temp))
     return a
 
 
 ##choose and permutations without recursion
-def choose2(l,k):
-        if k==len(l):
-            return l
-        d=[]
-        for i in l:
-            a=list(l)
-            a.remove(i)
-            d.append(a)
-        for j in d:
-            if len(j)>k:
-                for m in j:
-                    b = list(j)
-                    b.remove(m)
-                    d.append(b)
-        z=[]
-        for y in d:
-            if y not in z:
-                if len(y)==k:
-                    z.append(y)
-        return z
-print(choose2(list(range(10)),5))
+def choose2(l, k):
+    if k == len(l):
+        return l
+    d = []
+    for i in l:
+        a = list(l)
+        a.remove(i)
+        d.append(a)
+    for j in d:
+        if len(j) > k:
+            for m in j:
+                b = list(j)
+                b.remove(m)
+                d.append(b)
+    z = []
+    for y in d:
+        if y not in z:
+            if len(y) == k:
+                z.append(y)
+    return z
+
+
+print(choose2(list(range(10)), 5))
 '''Obviously this is an extremely inefficient solution, but it worked first try'''
 
-def permutations2(A,k):
-        r = [[]]
-        for i in range(k):
-            r = [[a] + b for a in A for b in [i for i in r if a not in i]]
-        return r
 
-print(permutations2([1,2,3,4],4))
+def permutations2(A, k):
+    r = [[]]
+    for i in range(k):
+        r = [[a] + b for a in A for b in [i for i in r if a not in i]]
+    return r
+
+
+print(permutations2([1, 2, 3, 4], 4))
+
+
 ##multisets
-def multichoose(S,k):
+def multichoose(S, k):
     pass
+
 
 ##not_angry
 
 def not_angry(n):
-    if n==0 or n==1:
+    if n == 0 or n == 1:
         return 1
     else:
-        return not_angry(n-1)+not_angry(n-2)
+        return not_angry(n - 1) + not_angry(n - 2)
 
 
+##Generators
 
+##9.Fibonacci Sequence generator
 
+def fibs():
+    '''generator for fibonacci sequence'''
+    r0, r1 = 0, 1
+    while True:
+        yield r0
+        r0, r1 = r1, r0 + r1
 
