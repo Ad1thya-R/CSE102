@@ -63,6 +63,6 @@ def choose_gen(l: object, k: object) -> object:
                 yield from result
 choose([1,3,5,7], 2)
 g = choose_gen(list(range(100)), 50)
-
+a=2
 
 
