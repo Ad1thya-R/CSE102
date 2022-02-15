@@ -30,11 +30,13 @@ def interleave(g1,g2):
         k0, k1 = k1, random.choice(next(g1),next(g2))
 g = interleave(prefix_sums(10), fibs())
 print([next(g) for _ in range(10)])'''
-lista=[]
-iteraciones=[0]
+lista = []
+iteraciones = [0]
+
+
 def choose(l, k):
     if k == len(l):
-        if l not in lista:
+        if not l in lista:
             lista.append(l)
         return
     for i in l:
@@ -44,20 +46,21 @@ def choose(l, k):
         iteraciones[0] += 1
         if not result in lista and result:
             lista.append(result)
-    return lista
+    print(lista)
 
 
 def choose_gen(l: object, k: object) -> object:
     if k == len(l):
-        if l not in lista:
-            yield l
+        yield sorted(l)
         return
     for i in l:
         aux = l[:]
         aux.remove(i)
         result = choose_gen(aux, k)
         if result:
-            yield from result
+                yield from result
+choose([1,3,5,7], 2)
+g = choose_gen(list(range(100)), 50)
 
 
 
