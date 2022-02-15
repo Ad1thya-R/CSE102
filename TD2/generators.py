@@ -33,7 +33,7 @@ print([next(g) for _ in range(10)])'''
 lista = []
 iteraciones = [0]
 
-
+'''
 def choose(l, k):
     if k == len(l):
         if not l in lista:
@@ -47,9 +47,11 @@ def choose(l, k):
         if not result in lista and result:
             lista.append(result)
     print(lista)
-
+'''
 
 def choose_gen(l: object, k: object) -> object:
+    if k>len(l):
+        return None
     if k == len(l):
         yield sorted(l)
         return
