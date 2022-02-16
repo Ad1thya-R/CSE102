@@ -47,18 +47,23 @@ def choose(l,k):
 
 def choose_gen(l,k):
     if k>len(l):
-        return []
-    if k==0:
-        return [[]]
-    if k==len(l):
-        yield [l]
         return
+    if k==0:
+         yield []
+    elif k==len(l):
+        yield l
     else:
-        a = l[0]
-        b = choose_gen_2(l[1:], k - 1)
-        c = choose_gen_2(l[1:], k)
-        yield from [[a]+l for l in b]+[l for l in c]
-        
+        a=l[0]
+        for i in choose_gen(l[1:],k-1):
+            yield ([a]+i)
+        for j in choose_gen(l[1:],k):
+            yield j
 
+        
+print([s for s in choose_gen([1,3,5,7], 2)])
+
+g = choose_gen(list(range(100)), 50)
+xs = [next(g) for _ in range(1000)]
+print(next(g))
 
 
