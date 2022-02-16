@@ -82,8 +82,10 @@ def multichoose(S, k):
 ##not_angry
 
 def not_angry(n):
-    if n == 0 or n == 1:
+    if n == 0:
         return 1
+    if n == 1:
+        return 2
     else:
         return not_angry(n - 1) + not_angry(n - 2)
 
