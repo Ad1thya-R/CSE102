@@ -13,24 +13,19 @@ def binom(n, k):
         return binom(n - 1, k) + binom(n - 1, k - 1)
 
 
-lista = []
-iteraciones = [0]
-
-
-def choose(l, k):
-    if k == len(l):
-        if not l in lista:
-            lista.append(l)
-        return
-    for i in l:
-        aux = l[:]
-        aux.remove(i)
-        result = choose(aux, k)
-        iteraciones[0] += 1
-        if not result in lista and result:
-            lista.append(result)
-
-
+def choose(l,k):
+    if k>len(l):
+        return []
+    if k==0:
+        return [[]]
+    if k==len(l):
+        return [l]
+    else:
+        a=l[0]
+        b=choose(l[1:],k-1)
+        c=choose(l[1:],k)
+        return [[a]+l for l in b]+[l for l in c]
+print(choose(list(range(4)),2))
 def permutations(l):
     if not l:
         return [[]]
