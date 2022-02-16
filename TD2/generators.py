@@ -59,11 +59,6 @@ def choose_gen(l,k):
         for j in choose_gen(l[1:],k):
             yield j
 
-        
-print([s for s in choose_gen([1,3,5,7], 2)])
 
-g = choose_gen(list(range(100)), 50)
-xs = [next(g) for _ in range(1000)]
-print(next(g))
 
 
