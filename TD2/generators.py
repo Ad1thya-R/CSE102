@@ -45,20 +45,7 @@ def choose(l,k):
 
 '''
 
-
-def choose_gen(l: object, k: object) -> object:
-    if k>len(l):
-        return None
-    if k == len(l):
-        yield sorted(l)
-        return
-    for i in l:
-        aux = l[:]
-        aux.remove(i)
-        result = choose_gen(aux, k)
-        if result:
-                yield from result
-def choose_gen_2(l,k):
+def choose_gen(l,k):
     if k>len(l):
         return []
     if k==0:
