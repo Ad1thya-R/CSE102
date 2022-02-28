@@ -59,27 +59,7 @@ def choose_gen(l,k):
         for j in choose_gen(l[1:],k):
             yield j
 
-def subsets_gen(l):
-    d = [l]
-    for i in l:
-        a = list(l)
-        a.remove(i)
-        d.append(a)
-    for j in d:
-            for m in j:
-                b = list(j)
-                b.remove(m)
-                d.append(b)
-    z = []
-    for y in d[::-1]:
-        if y not in z:
-            z.append(y)
-            yield y
 
-print([s for s in subsets_gen([1,2,3])])
-g = subsets_gen(list(range(10)))
-xs = [next(g) for _ in range(20)]
-print(xs)
 
 
 
