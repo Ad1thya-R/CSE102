@@ -25,7 +25,8 @@ def next_seq(alphas, us):
 
 def u(alphas, us, n):
     seq=[alphas[i]*us[i] for i in range(len(us))]
-    while len(seq)<=n:
-        a = list(seq)
-        seq.append(next_seq(alphas, a[len(seq)-len(us):len(seq)+1]))
+    for i in range(n):
+        seq.append(next_seq(alphas, seq[i:i+len(us)]))
+
     return seq[n]
+
