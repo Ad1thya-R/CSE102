@@ -23,16 +23,18 @@ def subseq(seq):
     that returns all subsequences of the sequence as arrays
     in some arbitrary order'''
     subseq=[]
-
+    res=[]
     def dfs(i):
         if i >= len(seq):
-            yield subseq[:]
+            res.append(subseq[:])
+            return
         subseq.append(seq[i])
-        yield from dfs(i+1)
+        dfs(i+1)
 
         subseq.pop()
-        yield from dfs(i+1)
+        dfs(i+1)
     dfs(0)
+    return res
 
 def subseq_2(seq):
     """ Given a list of elements return a generator
@@ -45,6 +47,7 @@ def subseq_2(seq):
         for item in subseq_2(seq[1:]):
                 yield [seq[0]] + item
                 yield item
-print([s for s in subseq_2([1,2,3,4])])
+print([s for s in subseq([1,2,3,4])])
 
+def subseq_personal(seq):
 
