@@ -18,36 +18,18 @@ def bt(c):
         for subc in children(c):
             yield from bt(subc)
 '''
+
 def subseq(seq):
     '''Given a sequence as an array, write a generator
     that returns all subsequences of the sequence as arrays
     in some arbitrary order'''
-    subseq=[]
-    res=[]
-    def dfs(i):
-        if i >= len(seq):
-            res.append(subseq[:])
-            return
-        subseq.append(seq[i])
-        dfs(i+1)
-
-        subseq.pop()
-        dfs(i+1)
-    dfs(0)
-    return res
-
-def subseq_2(seq):
-    """ Given a list of elements return a generator
-    that will generate all the subsets """
-
-    if len(seq) == 1:
+    if len(seq) <= 1:
         yield seq
         yield []
     else:
-        for item in subseq_2(seq[1:]):
+        for item in subseq(seq[1:]):
                 yield [seq[0]] + item
                 yield item
-print([s for s in subseq([1,2,3,4])])
 
-def subseq_personal(seq):
+
 
