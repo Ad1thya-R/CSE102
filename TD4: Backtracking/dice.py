@@ -12,3 +12,14 @@ def beats(die1,die2):
     return True if win_probability(die1,die2)>0.5 else False
 
 def get_dice(n,s,dice):
+    die=slice_dice(n,s,dice)
+    if n*s==len(dice):
+        if beats(die[n-1],die[0]):
+            yield dice
+        else:
+            return
+    else:
+        r=len(dice)//2
+
+
+
