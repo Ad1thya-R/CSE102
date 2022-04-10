@@ -5,4 +5,3 @@ def required(G,c, visited=[]):
             required(G,neighbour,visited)
     return len(visited)
 
-print(required([[2], [0], []], 0))
