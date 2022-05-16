@@ -72,7 +72,7 @@ def RGB2YCbCr(r, g, b):
 	Cr = 128 + 0.5 * r - 0.418688 * g - 0.081312 * b
 	return (Y, Cb, Cr)
 
-print(RGB2YCbCr(255,255,255))
+
 def YCbCr2RGB(Y, Cb, Cr):
 	'''
 	:int r: red, 0 to 255
@@ -95,15 +95,22 @@ def img_RGB2YCbCr(img):
 	'''
 	h=len(img)
 	w=len(img[0])
-	Y = [[0] * w] * h
-	Cb = [[0] * w] * h
-	Cr = [[0] * w] * h
-
+	Y=[]
+	Cb=[]
+	Cr=[]
 	for i, row in enumerate(img):
+		Y_row=[]
+		Cb_row = []
+		Cr_row = []
 		for j, pixel in enumerate(row):
-			print(pixel.split())
-			(r, g, b) = pixel.split()
-			(Y[i][j], Cb[i][j], Cr[i][j]) = RGB2YCbCr(r, g, b)
+			(R,G,B)=tuple(pixel.split())
+			Y_pixel, Cb_pixel, Cr_pixel = RGB2YCbCr(float(R),float(G),float(B))
+			Y_row.append(Y_pixel)
+			Cb_row.append(Cb_pixel)
+			Cr_row.append(Cr_pixel)
+		Y.append(Y_row)
+		Cb.append(Cb_row)
+		Cr.append(Cr_row)
 	return (Y, Cb, Cr)
 
 def img_YCbCr2RGB(Y, Cb, Cr):
@@ -114,13 +121,17 @@ def img_YCbCr2RGB(Y, Cb, Cr):
 	:param Cr: 2D array of values of Cr for each pixel in image
 	:return:
 	'''
-	img=[0*len(Y)]*len(Y[0])
+	img=[]
 	for i in range(len(Y)):
+		row=[]
 		for j in range(len(Y[0])):
-			converted=YCbCr2RGB(Y[i][j], Cb[i][j], Cr[i][j])
-			print(' '.join(str(converted)))
+			r,g,b=YCbCr2RGB(Y[i][j], Cb[i][j], Cr[i][j])
+			row.append(str(r)+' '+str(g)+' '+str(b))
+		img.append(row)
 	return img
 
 
+
+
 print(img_RGB2YCbCr([['0 255 0', '0 0 255', '255 255 0'], ['255 255 255', '0 0 0', '0 0 0']]))
-print(img_YCbCr2RGB([[255.0, 0.0, 0.0], [255.0, 0.0, 0.0]], [[128.0, 128.0, 128.0], [128.0, 128.0, 128.0]], [[127.99999999999999, 128.0, 128.0], [127.99999999999999, 128.0, 128.0]]))
+print(img_YCbCr2RGB([[149.685, 29.07, 225.93], [255.0, 0.0, 0.0]], [[43.527680000000004, 255.5, 0.5], [128.0, 128.0, 128.0]], [[21.234560000000002, 107.26544, 148.73456], [127.99999999999999, 128.0, 128.0]]))
