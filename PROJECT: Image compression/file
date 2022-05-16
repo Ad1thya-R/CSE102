@@ -8,3 +8,4 @@ P3           # "P3" means this is a RGB color image in ASCII
 255 255   0  # yellow
 255 255 255  # white
   0   0   0  # black
+  0   0   0  # black
