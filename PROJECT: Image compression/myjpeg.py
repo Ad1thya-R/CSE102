@@ -119,7 +119,7 @@ def img_YCbCr2RGB(Y, Cb, Cr):
 	:param Y: 2D array of values of Y for each pixel in image
 	:param Cb: 2D array of values of Cb for each pixel in image
 	:param Cr: 2D array of values of Cr for each pixel in image
-	:return:
+	:return: converts img back to pixels with RGB formatting from YCbCr
 	'''
 	img=[]
 	for i in range(len(Y)):
@@ -130,8 +130,67 @@ def img_YCbCr2RGB(Y, Cb, Cr):
 		img.append(row)
 	return img
 
+def subsampling(w,h,C,b,a):
+	'''
+	:param w: width of image
+	:param h: height of image
+	:param C: 2D array of certain attribute (e.g. RGB or Y attributes)
+	:param b: sub samplng mode dividing the image's width (block height)
+	:param a:sub sampling mode dividing the image's height (block width)
+	:return:
+	'''
+	img = []
+	for i in range(0, h, b):
+		row = []
+		C_cut=C[i:i+b]
+		for j in range(0, w, a):
+			temp_sum=0
+			for c in C_cut:
+				temp_sum+=sum(c[j:j+a])
+				temp_len=len(c[j:j+a])
+			row.append(int(temp_sum/(temp_len*len(C_cut))))
+		img.append(row)
+	return img
+
+def extrapolate(w, h, C, b, a):
+	'''
+
+	:param w: width BEFORE sub sampling has been applied
+	:param h: height BEFORE sub sampling has been applied
+	:param C: sub sampled matrix
+	:param b:sub samplng mode dividing the image's width (block height)
+	:param a:sub sampling mode dividing the image's height (block width)
+	:return:
+	'''
+	img=[[0]*w]*h
+	for smallrow in C:
+		column_count=0
+		mult=[[k]*a for k in smallrow]
+		print(mult)
+
+
+print([[2]*3+[3]*3+[4]*4]*10)
+
+mat=[[2, 2, 2, 3, 3, 3, 4, 4, 4, 5],
+	 [2, 2, 2, 3, 3, 3, 4, 4, 4, 6],
+	 [2, 2, 2, 3, 3, 3, 4, 4, 4, 7],
+	 [2, 2, 2, 3, 3, 3, 4, 4, 4, 1],
+	 [2, 2, 2, 3, 3, 3, 4, 4, 4, 2],
+	 [2, 2, 2, 3, 3, 3, 4, 4, 4, 3],
+	 [2, 2, 2, 3, 3, 3, 4, 4, 4, 6],
+	 [2, 2, 2, 3, 3, 3, 4, 4, 4, 7],
+	 [2, 2, 2, 3, 3, 3, 4, 4, 4, 8],
+	 [2, 2, 2, 3, 3, 3, 4, 4, 4, 9]]
 
 
 
 print(img_RGB2YCbCr([['0 255 0', '0 0 255', '255 255 0'], ['255 255 255', '0 0 0', '0 0 0']]))
 print(img_YCbCr2RGB([[149.685, 29.07, 225.93], [255.0, 0.0, 0.0]], [[43.527680000000004, 255.5, 0.5], [128.0, 128.0, 128.0]], [[21.234560000000002, 107.26544, 148.73456], [127.99999999999999, 128.0, 128.0]]))
+
+
+print(subsampling(10,10,mat,4,3))
+mat_sampled=[[2, 3, 4, 4],
+			 [2, 3, 4, 4],
+			 [2, 3, 4, 4],
+			 [2, 3, 4, 4]]
+print(extrapolate(10,10,mat_sampled,4,3))
