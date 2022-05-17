@@ -1,3 +1,4 @@
+from itertools import repeat
 '''
 The goal of this project is to develop a lossy image compression
 format close to JPEG. Lossy compression algorithms allow to
@@ -148,13 +149,12 @@ def subsampling(w,h,C,b,a):
 			for c in C_cut:
 				temp_sum+=sum(c[j:j+a])
 				temp_len=len(c[j:j+a])
-			row.append(int(temp_sum/(temp_len*len(C_cut))))
+			row.append(round(temp_sum/(temp_len*len(C_cut))))
 		img.append(row)
 	return img
 
 def extrapolate(w, h, C, b, a):
 	'''
-
 	:param w: width BEFORE sub sampling has been applied
 	:param h: height BEFORE sub sampling has been applied
 	:param C: sub sampled matrix
@@ -162,11 +162,17 @@ def extrapolate(w, h, C, b, a):
 	:param a:sub sampling mode dividing the image's height (block width)
 	:return:
 	'''
-	img=[[0]*w]*h
+	img=[]
 	for smallrow in C:
 		column_count=0
-		mult=[[k]*a for k in smallrow]
-		print(mult)
+		temp_row=[]
+		for pixel in smallrow:
+			temp_row+=[pixel]*a
+			temp_row=temp_row[:w]
+		img.extend([temp_row]*b)
+	img=img[:h]
+	return img
+
 
 
 print([[2]*3+[3]*3+[4]*4]*10)
@@ -189,8 +195,9 @@ print(img_YCbCr2RGB([[149.685, 29.07, 225.93], [255.0, 0.0, 0.0]], [[43.52768000
 
 
 print(subsampling(10,10,mat,4,3))
+
 mat_sampled=[[2, 3, 4, 4],
 			 [2, 3, 4, 4],
-			 [2, 3, 4, 4],
-			 [2, 3, 4, 4]]
+			 [2, 3, 4, 8]]
+
 print(extrapolate(10,10,mat_sampled,4,3))
