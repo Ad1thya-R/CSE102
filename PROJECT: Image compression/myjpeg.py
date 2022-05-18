@@ -1,4 +1,3 @@
-from itertools import repeat
 '''
 The goal of this project is to develop a lossy image compression
 format close to JPEG. Lossy compression algorithms allow to
@@ -40,7 +39,6 @@ def ppm_load(stream):
 			curr2=[next(g) for _ in range(3)]
 			temprow.append(' '.join(curr2))
 		img.append(temprow)
-		temprow=[]
 	return int(w),int(h),img
 
 def ppm_save(w,h,img, output):
@@ -71,7 +69,7 @@ def RGB2YCbCr(r, g, b):
 	Y = 0.299 * r + 0.587 * g + 0.114 * b
 	Cb = 128 - 0.168736 * r - 0.331264 * g + 0.5 * b
 	Cr = 128 + 0.5 * r - 0.418688 * g - 0.081312 * b
-	return (Y, Cb, Cr)
+	return (round(Y), round(Cb), round(Cr))
 
 
 def YCbCr2RGB(Y, Cb, Cr):
@@ -79,12 +77,12 @@ def YCbCr2RGB(Y, Cb, Cr):
 	:int r: red, 0 to 255
 	:int g: green 0 to 255
 	:int b: blue 0 to 255
-	:return:
+	:return: r,g,b color format as integers rounded
 	'''
 	r = Y + 1.402 * (Cr - 128)
 	g = Y - 0.34414 * (Cb - 128) - 0.71414 * (Cr - 128)
 	b = Y + 1.772 * (Cb - 128)
-	return (r, g, b)
+	return (round(r), round(g), round(b))
 
 
 
@@ -138,7 +136,8 @@ def subsampling(w,h,C,b,a):
 	:param C: 2D array of certain attribute (e.g. RGB or Y attributes)
 	:param b: sub samplng mode dividing the image's width (block height)
 	:param a:sub sampling mode dividing the image's height (block width)
-	:return:
+	:return: an img where the data has been compressed by considering
+	axb blocks as pixels and averaging out the values in these blocks
 	'''
 	img = []
 	for i in range(0, h, b):
@@ -160,11 +159,10 @@ def extrapolate(w, h, C, b, a):
 	:param C: sub sampled matrix
 	:param b:sub samplng mode dividing the image's width (block height)
 	:param a:sub sampling mode dividing the image's height (block width)
-	:return:
+	:return: A 2D-array to emulate the original image (as some data was lost during subsampling)
 	'''
 	img=[]
 	for smallrow in C:
-		column_count=0
 		temp_row=[]
 		for pixel in smallrow:
 			temp_row+=[pixel]*a
@@ -175,7 +173,7 @@ def extrapolate(w, h, C, b, a):
 
 
 
-print([[2]*3+[3]*3+[4]*4]*10)
+
 
 mat=[[2, 2, 2, 3, 3, 3, 4, 4, 4, 5],
 	 [2, 2, 2, 3, 3, 3, 4, 4, 4, 6],
@@ -196,7 +194,7 @@ print(img_YCbCr2RGB([[149.685, 29.07, 225.93], [255.0, 0.0, 0.0]], [[43.52768000
 
 print(subsampling(10,10,mat,4,3))
 
-mat_sampled=[[2, 3, 4, 4],
+mat_sampled=[[2, 3, 4, 5],
 			 [2, 3, 4, 4],
 			 [2, 3, 4, 8]]
 
