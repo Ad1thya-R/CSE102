@@ -48,7 +48,7 @@ def subset_sum(nm,S,M):
         # from "nm" - 1 by 1 and continue recursively.
         rS = subset_sum(
             nm.difference([i]),  # We remove "i" from "nm"
-            S.union([i]),  # We add "i" to "S"
+            S.union([i]),  # We add "i" to "S"	input_column_len=len(C)
             M  # The targeted sum is unchanged
         )
 
