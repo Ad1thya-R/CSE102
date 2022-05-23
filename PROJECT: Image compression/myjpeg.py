@@ -3,7 +3,7 @@ The goal of this project is to develop a lossy image compression
 format close to JPEG. Lossy compression algorithms allow to
 greatly reduce the size of image files at the price of loosing some data from the original image. In general, a lossy image compression works by pruning the information the human eye is not sensible to. This is the case, for instance, in the JPEG file format.
 """
-
+import math
 
 #The following class operates to check the validity of User inputs
 class InvalidInput(Exception):
@@ -186,10 +186,6 @@ def extrapolate(w: int, h: int, C: list, b: int, a: int) -> list:
 	for row in C:
 		if len(C[0])!=len(row):
 			raise InvalidInput(C, "A matrix of integers (A 2D array where the rows are of equal length).")
-	##Check
-
-
-
 
 	img=[]
 	for smallrow in C:
@@ -202,7 +198,86 @@ def extrapolate(w: int, h: int, C: list, b: int, a: int) -> list:
 	return img
 
 
+def block_splitting(w: int, h: int, C: list) -> list:
+	"""
 
+	:param w:
+	:param h:
+	:param C:
+	:return:
+	"""
+	for i in range(0, h, 8):
+		block = []
+		if i + 8 > h:
+			temp_col = C[i:i + 8]
+			t = len(temp_col)
+			temp_col.extend([temp_col[t - 1]] * (8 - t))
+			C_cut=temp_col
+		else:
+			C_cut=C[i:i+8]
+		for j in range(0, w, 8):
+			for c in C_cut:
+				if j + 8 > w:
+					temp_row=c[j:j+8]
+					t=len(temp_row)
+					temp_row.extend([temp_row[t-1]]*(8-t))
+					block.append(temp_row)
+				else:
+					block.append(c[j:j+8])
+		if len(block)==16:
+			yield block[:8]
+
+			yield block[8:]
+		else:
+			yield block
+
+def DCT(v):
+	"""
+
+	:param v:
+	:return:
+	"""
+	n=len(v)
+	v_1=sum([1/math.sqrt(n)*v[j] for j in range(n)])
+	v_out=[round(v_1,2)]
+	for i in range(1,n):
+		temp_v=sum([math.sqrt(2/n) * v[j] * math.cos(math.pi/n * (j + 1/2) * i) for j in range(n)])
+		v_out.append(round(temp_v,2))
+	return v_out
+
+def IDCT(v):
+	"""
+
+	:param v:
+	:return:
+	"""
+
+
+
+v=[8, 16, 24, 32, 40, 48, 56, 64]
+print(DCT(v))
+
+
+
+
+C=[
+	[ 1,  2,  3,  4,  5,  6,  7,  8,  9, 10],
+    [ 2,  3,  4,  5,  6,  7,  8,  9, 10,  1],
+    [ 3,  4,  5,  6,  7,  8,  9, 10,  1,  2],
+    [ 4,  5,  6,  7,  8,  9, 10,  1,  2,  3],
+    [ 5,  6,  7,  8,  9, 10,  1,  2,  3,  4],
+    [ 6,  7,  8,  9, 10,  1,  2,  3,  4,  5],
+    [ 7,  8,  9, 10,  1,  2,  3,  4,  5,  6],
+    [ 8,  9, 10,  1,  2,  3,  4,  5,  6,  7],
+    [ 9, 10,  1,  2,  3,  4,  5,  6,  7,  8],
+]
+
+a=block_splitting(10,9,C)
+
+print(next(a))
+print(next(a))
+print(next(a))
+print(next(a))
 
 
 mat=[[2, 2, 2, 3, 3, 3, 4, 4, 4, 5],
@@ -224,7 +299,7 @@ print(img_YCbCr2RGB([[149.685, 29.07, 225.93], [255.0, 0.0, 0.0]], [[43.52768000
 
 print(subsampling(6,10,mat,4,3))
 
-mat_sampled=[[2, 3, 4, 2, 5],
+mat_sampled=[[2, 3, 4, 2],
 			 [2, 3, 4, 2],
 			 [1, 2, 2, 1]]
 
