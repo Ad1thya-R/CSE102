@@ -4,6 +4,10 @@ format close to JPEG. Lossy compression algorithms allow to
 greatly reduce the size of image files at the price of loosing some data from the original image. In general, a lossy image compression works by pruning the information the human eye is not sensible to. This is the case, for instance, in the JPEG file format.
 """
 import math
+import random as rd
+import numpy as np
+import scipy as sc
+
 
 #The following class operates to check the validity of User inputs
 class InvalidInput(Exception):
@@ -230,6 +234,14 @@ def block_splitting(w: int, h: int, C: list) -> list:
 			yield block[8:]
 		else:
 			yield block
+def Cn(n):
+	C=[]
+	for i in range(n):
+		for j in range(n):
+			if i == 0:
+				C[i][j]=math.sqrt(1 / n) * v[j] * math.cos(math.pi / n * (j + 1 / 2) * i)
+			else:
+				C[i][j] = math.sqrt(2 / n) * v[j] * math.cos(math.pi / n * (j + 1 / 2) * i)
 
 def DCT(v):
 	"""
@@ -253,9 +265,11 @@ def IDCT(v):
 	"""
 
 
-
 v=[8, 16, 24, 32, 40, 48, 56, 64]
-print(DCT(v))
+v2=[101.82, -51.54, -0.0, -5.39, 0.0, -1.61, -0.0, -0.41]
+print(sum([1 / math.sqrt(len(v2)) * v2[k] for k in range(len(v2))]))
+from scipy.fft import idct
+print(idct(np.array(v2)))
 
 
 
@@ -297,11 +311,12 @@ print(img_RGB2YCbCr([['0 255 0', '0 0 255', '255 255 0'], ['255 255 255', '0 0 0
 print(img_YCbCr2RGB([[149.685, 29.07, 225.93], [255.0, 0.0, 0.0]], [[43.527680000000004, 255.5, 0.5], [128.0, 128.0, 128.0]], [[21.234560000000002, 107.26544, 148.73456], [127.99999999999999, 128.0, 128.0]]))
 
 
-print(subsampling(6,10,mat,4,3))
+
 
 mat_sampled=[[2, 3, 4, 2],
 			 [2, 3, 4, 2],
 			 [1, 2, 2, 1]]
 
-print(extrapolate(10,10,mat_sampled,4,3))
+
+
 
