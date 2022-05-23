@@ -234,16 +234,29 @@ def block_splitting(w: int, h: int, C: list) -> list:
 			yield block[8:]
 		else:
 			yield block
-def Cn(n):
-	C=[]
+
+def Cn(n: int) -> int:
+	C=[[0 for _ in range(n)] for _ in range(n)]
 	for i in range(n):
 		for j in range(n):
 			if i == 0:
-				C[i][j]=math.sqrt(1 / n) * v[j] * math.cos(math.pi / n * (j + 1 / 2) * i)
+				C[i][j]=math.sqrt(1 / n)
 			else:
-				C[i][j] = math.sqrt(2 / n) * v[j] * math.cos(math.pi / n * (j + 1 / 2) * i)
+				C[i][j] = math.sqrt(2 / n) * math.cos(math.pi / n * (j + 1 / 2) * i)
+	return C
 
-def DCT(v):
+def Cn_T(n: int) -> list:
+	C = [[0 for _ in range(n)] for _ in range(n)]
+	for i in range(n):
+		for j in range(n):
+			if i == 0:
+				C[j][i] = math.sqrt(1 / n)
+			else:
+				C[j][i] = math.sqrt(2 / n) * math.cos(math.pi / n * (j + 1 / 2) * i)
+	return C
+
+
+def DCT(v: list) -> list:
 	"""
 
 	:param v:
@@ -257,19 +270,189 @@ def DCT(v):
 		v_out.append(round(temp_v,2))
 	return v_out
 
-def IDCT(v):
+def IDCT(v: list) -> list :
 	"""
 
 	:param v:
 	:return:
 	"""
+	n=len(v)
+	C=Cn(n)
+	result = []
+	for i in range(len(C[0])):  # this loops through columns of the matrix
+		total = 0
+		for j in range(len(v)):  # this loops through vector coordinates & rows of matrix
+			total += v[j] * C[j][i]
+		result.append(total)
+	return result
 
+
+def matProd (A , B ):
+	# we assume that A and B are non - empty matrices
+	m = len ( A )
+	n = len ( A [0])
+	if len ( B ) != n :
+		return None # the size does not match
+	p = len ( B [0])
+	C = [ None ] * m
+	for i in range ( m ):
+		C [ i ] = [0] * p
+		for k in range ( p ):
+			for j in range ( n ):
+				C[i][k] += A[i][j] * B[j][k]
+	return C
+
+def DCT2(m: int, n: int, A: list):
+	"""
+
+	:param m: height (no of rows)
+	:param n: width (no of columns)
+	:param A: input matrix
+	:return:
+	"""
+	CnT=Cn_T(n)
+	Cm=Cn(m)
+	first_mult=matProd(A,CnT)
+	return matProd(Cm,first_mult)
+
+def IDCT2(m: int, n: int, A: list):
+	"""
+
+	:param m: height (no of rows)
+	:param n: width (no of columns)
+	:param A: input matrix
+	:return:
+	"""
+	C = Cn(n)
+	Cm = Cn_T(m)
+	first_mult = matProd(A, C)
+	return matProd(Cm, first_mult)
+
+def redalpha(i: int) -> tuple:
+	"""
+
+	:param i:
+	:return:
+	s, an integer in the set {−1,1},
+	k an integer in the range {0..8},
+	αi=s⋅αk
+	"""
+	if abs(i)<=8:
+		return 1,abs(i)
+	else:
+		int_div=i//16
+		remainder=i%16
+		if int_div%2==0:
+			k=1
+		else:
+			k=-1
+		if remainder>=9:
+			remainder-=16
+			k*=-1
+	return (k,abs(remainder))
+print(redalpha(-8))
+def ncoeff8(i, j):
+	"""
+
+	:param i: integer in the range {0..8},
+	:param j: integer in the range {0..8},
+	:return:
+	s, an integer in the set {−1,1},
+	k an integer in the range {0..7},
+	Cij=s⋅αk
+	"""
+	if i == 0:
+		return redalpha(4)
+	else:
+		return redalpha(i*(2*j+1))
+
+#pre-compute C_alpha matrix
+C_alpha=[
+    [1/2*ncoeff8(i, j)[0]*math.cos(ncoeff8(i,j)[1]*math.pi/16) for j in range(8)]
+    for i in range(8)
+]
+print(C_alpha)
+print(Cn(8))
+def DCT_Chen(A):
+	"""
+
+	:param A:
+	:return:
+	"""
+	v_before=[[0 for _ in range(8)] for _ in range(8)]
+	for r in range(8):
+		v0=sum([math.cos(math.pi/4)/2 * A[r][j] for j in range(8)])
+		v_before[r][0]=v0
+		for i in range(1,8):
+			if i%2==0:
+				v_temp=sum([(A[r][j]+ A[r][7-j]) * C_alpha[i][j] for j in range(4)])
+			else:
+				v_temp = sum([(A[r][j] - A[r][7 - j]) * C_alpha[i][j] for j in range(4)])
+			v_before[r][i]=v_temp
+	v_mid=[[v_before[j][i] for j in range(len(v_before))] for i in range(len(v_before[0]))]
+	v_final=[[0 for _ in range(8)] for _ in range(8)]
+	for r in range(8):
+		v0 = sum([math.cos(math.pi / 4) / 2 * v_mid[r][j] for j in range(8)])
+		v_final[0][r] = v0
+		for i in range(1, 8):
+			if i % 2 == 0:
+				v_temp = sum([(v_mid[r][j] + v_mid[r][7 - j]) * C_alpha[i][j] for j in range(4)])
+			else:
+				v_temp = sum([(v_mid[r][j] - v_mid[r][7 - j]) * C_alpha[i][j] for j in range(4)])
+			v_final[i][r] = v_temp
+	return v_final
+
+
+def IDCT_Chen(A):
+	"""
+
+	:param A:
+	:return:
+	"""
+
+
+
+
+
+
+M8 = [
+    [ncoeff8(i, j) for j in range(8)]
+    for i in range(8)
+]
+
+
+def M8_to_str(M8):
+	def for1(s, i):
+		return f"{'+' if s >= 0 else '-'}{i:d}"
+
+
+	return "\n".join(
+		" ".join(for1(s, i) for (s, i) in row)
+		for row in M8
+	)
+
+print(M8_to_str(M8))
+
+dctmat=[
+  [140,  144,  147,  140,  140,  155,  179,  175],
+  [144,  152,  140,  147,  140,  148,  167,  179],
+  [ 152,  155,  136,  167,  163,  162,  152,  172],
+  [168,  145,  156,  160,  152,  155,  136,  160],
+  [162,  148,  156,  148,  140,  136,  147,  162],
+  [ 147,  167,  140,  155,  155,  140,  136,  162],
+  [ 136,  156,  123,  167,  162,  144,  140,  147],
+  [ 148,  155,  136,  155,  152,  147,  147,  136]
+]
+
+print([DCT(m) for m in dctmat])
+print(DCT2(8,8,dctmat))
+
+print(DCT_Chen(dctmat))
 
 v=[8, 16, 24, 32, 40, 48, 56, 64]
 v2=[101.82, -51.54, -0.0, -5.39, 0.0, -1.61, -0.0, -0.41]
 print(sum([1 / math.sqrt(len(v2)) * v2[k] for k in range(len(v2))]))
-from scipy.fft import idct
-print(idct(np.array(v2)))
+print(IDCT(v2))
 
 
 
