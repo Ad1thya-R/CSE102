@@ -7,6 +7,7 @@ import math
 import random as rd
 import numpy as np
 import scipy as sc
+import time
 
 
 #The following class operates to check the validity of User inputs
@@ -236,6 +237,11 @@ def block_splitting(w: int, h: int, C: list) -> list:
 			yield block
 
 def Cn(n: int) -> int:
+	"""
+
+	:param n:
+	:return:
+	"""
 	C=[[0 for _ in range(n)] for _ in range(n)]
 	for i in range(n):
 		for j in range(n):
@@ -246,6 +252,11 @@ def Cn(n: int) -> int:
 	return C
 
 def Cn_T(n: int) -> list:
+	"""
+
+	:param n:
+	:return:
+	"""
 	C = [[0 for _ in range(n)] for _ in range(n)]
 	for i in range(n):
 		for j in range(n):
@@ -371,6 +382,8 @@ C_alpha=[
     [1/2*ncoeff8(i, j)[0]*math.cos(ncoeff8(i,j)[1]*math.pi/16) for j in range(8)]
     for i in range(8)
 ]
+v_before=[[0 for _ in range(8)] for _ in range(8)]
+v_final = [[0 for _ in range(8)] for _ in range(8)]
 print(C_alpha)
 print(Cn(8))
 def DCT_Chen(A):
@@ -378,27 +391,53 @@ def DCT_Chen(A):
 
 	:param A:
 	:return:
+	58
 	"""
-	v_before=[[0 for _ in range(8)] for _ in range(8)]
+
 	for r in range(8):
-		v0=sum([math.cos(math.pi/4)/2 * A[r][j] for j in range(8)])
+		v0=C_alpha[4][0] * sum([A[r][j] for j in range(8)])
 		v_before[r][0]=v0
 		for i in range(1,8):
 			if i%2==0:
-				v_temp=sum([(A[r][j]+ A[r][7-j]) * C_alpha[i][j] for j in range(4)])
+				if i==4:
+					v_add=(A[r][0]+ A[r][7])+(A[r][3]+ A[r][4])-(A[r][1]+ A[r][6])-(A[r][2]+ A[r][5])
+					v_temp=C_alpha[4][0]*v_add
+				elif i==6:
+					v_add1 = (A[r][0] + A[r][7]) - (A[r][3] + A[r][4])
+					v_add2 = (A[r][1] + A[r][6]) - (A[r][2] + A[r][5])
+					v_temp=C_alpha[6][0]*v_add1-C_alpha[2][0]*v_add2
+				else:
+					v_temp=sum([(A[r][j]+ A[r][7-j]) * C_alpha[i][j] for j in range(4)])
 			else:
-				v_temp = sum([(A[r][j] - A[r][7 - j]) * C_alpha[i][j] for j in range(4)])
+				if i==3:
+					v_add1=(A[r][0]+ A[r][7])-(A[r][3]+ A[r][4])
+					v_add2=(A[r][1]+ A[r][6])-(A[r][2]+ A[r][5])
+					v_temp=C_alpha[2][0]*v_add1+C_alpha[6][0]*v_add2
+				else:
+					v_temp = sum([(A[r][j] - A[r][7 - j]) * C_alpha[i][j] for j in range(4)])
 			v_before[r][i]=v_temp
 	v_mid=[[v_before[j][i] for j in range(len(v_before))] for i in range(len(v_before[0]))]
-	v_final=[[0 for _ in range(8)] for _ in range(8)]
 	for r in range(8):
-		v0 = sum([math.cos(math.pi / 4) / 2 * v_mid[r][j] for j in range(8)])
+		v0 = math.cos(math.pi / 4) / 2 * sum([v_mid[r][j] for j in range(8)])
 		v_final[0][r] = v0
 		for i in range(1, 8):
 			if i % 2 == 0:
-				v_temp = sum([(v_mid[r][j] + v_mid[r][7 - j]) * C_alpha[i][j] for j in range(4)])
+				if i == 4:
+					v_add = (v_mid[r][0] + v_mid[r][7]) + (v_mid[r][3] + v_mid[r][4]) - (v_mid[r][1] + v_mid[r][6]) - (v_mid[r][2] + v_mid[r][5])
+					v_temp = C_alpha[4][0] * v_add
+				elif i == 6:
+					v_add1 = (v_mid[r][0] + v_mid[r][7]) - (v_mid[r][3] + v_mid[r][4])
+					v_add2 = (v_mid[r][1] + v_mid[r][6]) - (v_mid[r][2] + v_mid[r][5])
+					v_temp = C_alpha[6][0] * v_add1 - C_alpha[2][0] * v_add2
+				else:
+					v_temp = sum([(v_mid[r][j] + v_mid[r][7 - j]) * C_alpha[i][j] for j in range(4)])
 			else:
-				v_temp = sum([(v_mid[r][j] - v_mid[r][7 - j]) * C_alpha[i][j] for j in range(4)])
+				if i == 3:
+					v_add1 = (v_mid[r][0] + v_mid[r][7]) - (v_mid[r][3] + v_mid[r][4])
+					v_add2 = (v_mid[r][1] + v_mid[r][6]) - (v_mid[r][2] + v_mid[r][5])
+					v_temp = C_alpha[2][0] * v_add1 + C_alpha[6][0] * v_add2
+				else:
+					v_temp = sum([(v_mid[r][j] - v_mid[r][7 - j]) * C_alpha[i][j] for j in range(4)])
 			v_final[i][r] = v_temp
 	return v_final
 
@@ -443,11 +482,25 @@ dctmat=[
   [ 136,  156,  123,  167,  162,  144,  140,  147],
   [ 148,  155,  136,  155,  152,  147,  147,  136]
 ]
+start = time.process_time()
 
-print([DCT(m) for m in dctmat])
-print(DCT2(8,8,dctmat))
+for _ in range(20):
+	print('nai:', DCT2(8,8,dctmat))
 
-print(DCT_Chen(dctmat))
+	end = time.process_time()
+
+	print(end - start)
+
+
+	start2 = time.process_time()
+
+
+	print('opt:', DCT_Chen(dctmat))
+
+	end2 = time.process_time()
+
+	print(end2 - start2)
+
 
 v=[8, 16, 24, 32, 40, 48, 56, 64]
 v2=[101.82, -51.54, -0.0, -5.39, 0.0, -1.61, -0.0, -0.41]
