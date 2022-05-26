@@ -377,6 +377,14 @@ def ncoeff8(i, j):
 	else:
 		return redalpha(i*(2*j+1))
 
+def Transpose(A):
+	"""
+
+	:param A: matrix (in form of list of lists)
+	:return: Transpose of matrix A
+	"""
+	return [[A[j][i] for j in range(len(A))] for i in range(len(A[0]))]
+
 #pre-compute C_alpha matrix
 C_alpha=[
     [1/2*ncoeff8(i, j)[0]*math.cos(ncoeff8(i,j)[1]*math.pi/16) for j in range(8)]
@@ -414,7 +422,7 @@ def DCT_Chen(A):
 			else:
 				v_temp = sum([(A[r][j] - A[r][7 - j]) * C_alpha[i][j] for j in range(4)])
 			v_before[r][i]=v_temp
-	v_mid=[[v_before[j][i] for j in range(len(v_before))] for i in range(len(v_before[0]))]
+	v_mid=Transpose(v_before)
 	for r in range(8):
 		v0 = math.cos(math.pi / 4) / 2 * sum([v_mid[r][j] for j in range(8)])
 		v_final[0][r] = v0
@@ -468,8 +476,18 @@ C_alpha_prov=[
 	[7,-5,3,-1,-7,5,-3,1]
 ]
 
+[[0.3535533905932738, 0.3535533905932738, 0.3535533905932738, 0.3535533905932738, 0.3535533905932738, 0.3535533905932738, 0.3535533905932738, 0.3535533905932738],
+ [0.46193976625564337, 0.19134171618254492, -0.19134171618254492, -0.46193976625564337, 0.46193976625564337, 0.19134171618254492, -0.19134171618254492, -0.46193976625564337],
+ [0.3535533905932738, -0.3535533905932738, -0.3535533905932738, 0.3535533905932738, 0.3535533905932738, -0.3535533905932738, -0.3535533905932738, 0.3535533905932738],
+ [0.19134171618254492, -0.46193976625564337, 0.46193976625564337, -0.19134171618254492, 0.19134171618254492, -0.46193976625564337, 0.46193976625564337, -0.19134171618254492],
+ [0.4903926402016152, 0.4157348061512726, 0.27778511650980114, 0.09754516100806417, -0.4903926402016152, -0.4157348061512726, -0.27778511650980114, -0.09754516100806417],
+ [0.4157348061512726, -0.09754516100806417, -0.4903926402016152, -0.27778511650980114, -0.4157348061512726, 0.09754516100806417, 0.4903926402016152, 0.27778511650980114],
+ [0.27778511650980114, -0.4903926402016152, 0.09754516100806417, 0.4157348061512726, -0.27778511650980114, 0.4903926402016152, -0.09754516100806417, -0.4157348061512726],
+ [0.09754516100806417, -0.27778511650980114, 0.4157348061512726, -0.4903926402016152, -0.09754516100806417, 0.27778511650980114, -0.4157348061512726, 0.4903926402016152]]
+
+##pre-compute C_alpha2 matrix
 C_alpha2=[[1/2*C_alpha_prov[i][j]/abs(C_alpha_prov[i][j])*math.cos(C_alpha_prov[i][j]*math.pi/16) for j in range(8)] for i in range(8)]
-v_before2=[[0 for _ in range(8)] for _ in range(8)]
+v_before2=[0 for _ in range(8)]
 v_final2 = [[0 for _ in range(8)] for _ in range(8)]
 print(C_alpha2)
 
@@ -477,28 +495,62 @@ def IDCT_Chen(A):
 	"""
 
 	:param A:
-	:return:
+	:return: Matrix which reverses the process of Discrete Cosine Transform
 	"""
-	print(A)
-	A_copy=A[:]
-	for i in range(len(A)):
-		A_copy[i][1]=A[i][2]
-		A_copy[i][2]= A[i][4]
-		A_copy[i][3] = A[i][6]
-		A_copy[i][4] = A[i][1]
-		A_copy[i][5] = A[i][3]
-		A_copy[i][6] = A[i][5]
-	print(A_copy)
-	# we assume that A and B are non - empty matrices
-	cache = {}
-	Out = [ None ] * 8
-	for i in range ( 8 ):
-		Out [ i ] = [0] * 8
-		for k in range(8):
-			for j in range (8):
-				Out[i][k] += A_copy[i][j] * C_alpha2[j][k]
-	print(len(cache), cache)
-	return Out
+
+	def I_1DCT_Chen(v_hat):
+		"""
+		1D implementation of Chen algorithm
+		for multiplicative optimisation of IDCT_Chen
+		:param A:
+		:return:
+		"""
+		cache={(0,4): v_hat[0]*C_alpha2[0][0],
+			   (2,2): v_hat[2]*C_alpha2[1][0],
+			   (2,6): v_hat[2]*C_alpha2[1][1],
+			   (4,4): v_hat[4]*C_alpha2[2][0],
+			   (6,2): v_hat[6]*C_alpha2[1][0],
+			   (6,6): v_hat[6]*C_alpha2[3][0],
+			   (1,1): v_hat[1]*C_alpha2[4][0],
+			   (1,3): v_hat[1]*C_alpha2[5][0],
+			   (1,5): v_hat[1]*C_alpha2[6][0],
+			   (1,7): v_hat[1]*C_alpha2[7][0],
+			   (3,1): v_hat[3]*C_alpha2[4][0],
+			   (3,3): v_hat[3]*C_alpha2[5][0],
+			   (3,5): v_hat[3]*C_alpha2[6][0],
+			   (3,7): v_hat[3]*C_alpha2[7][0],
+			   (5,1): v_hat[5]*C_alpha2[4][0],
+			   (5,3): v_hat[5]*C_alpha2[5][0],
+			   (5,5): v_hat[5]*C_alpha2[6][0],
+			   (5,7): v_hat[5]*C_alpha2[7][0],
+			   (7,1): v_hat[7]*C_alpha2[4][0],
+			   (7,3): v_hat[7]*C_alpha2[5][0],
+			   (7,5): v_hat[7]*C_alpha2[6][0],
+			   (7,7): v_hat[7]*C_alpha2[7][0]}
+
+		'''
+		22 multiplications have been cached, 
+		will access them to compute components of v_out list
+		 '''
+
+		v_out=[0 for _ in range(8)]
+		v_out[0]=cache[(0,4)]+cache[(2,2)]+cache[(4,4)]+cache[(6,6)]+cache[(1,1)]+cache[(3,3)]+cache[(5,5)]+cache[(7,7)]
+		v_out[1]=cache[(0,4)]+cache[(2,6)]-cache[(4,4)]-cache[(6,2)]+cache[(1,3)]-cache[(3,7)]-cache[(5,1)]-cache[(7,5)]
+		v_out[2]=cache[(0,4)]-cache[(2,6)]-cache[(4,4)]+cache[(6,2)]+cache[(1,5)]-cache[(3,1)]+cache[(5,7)]+cache[(7,3)]
+		v_out[3]=cache[(0,4)]-cache[(2,2)]+cache[(4,4)]-cache[(6,6)]+cache[(1,7)]-cache[(3,5)]+cache[(5,3)]-cache[(7,1)]
+		v_out[7]=cache[(0,4)]+cache[(2,2)]+cache[(4,4)]+cache[(6,6)]-cache[(1,1)]-cache[(3,3)]-cache[(5,5)]-cache[(7,7)]
+		v_out[6]=cache[(0,4)]+cache[(2,6)]-cache[(4,4)]-cache[(6,2)]-cache[(1,3)]+cache[(3,7)]+cache[(5,1)]+cache[(7,5)]
+		v_out[5]=cache[(0,4)]-cache[(2,6)]-cache[(4,4)]+cache[(6,2)]-cache[(1,5)]+cache[(3,1)]-cache[(5,7)]-cache[(7,3)]
+		v_out[4]=cache[(0,4)]-cache[(2,2)]+cache[(4,4)]-cache[(6,6)]-cache[(1,7)]+cache[(3,5)]-cache[(5,3)]+cache[(7,1)]
+
+		return v_out
+	for i in range(8):
+		v_before2[i]=I_1DCT_Chen(A[i])
+	v_mid=Transpose(v_before2)
+	for i in range(8):
+		v_final2[i]=I_1DCT_Chen(v_mid[i])
+	return v_final2
+
 
 
 #cache[(r,c,C_alpha2[r][c])]=A[r][c]*C_alpha2[r][c]
@@ -511,9 +563,8 @@ idctinput=[[1210.0000000000002, -17.996927353373888, 14.77925623306755, -8.97955
 		   [3.855633020558628, -2.2146896705631507, -18.16697022287876, 8.499840503342668, 8.268830646150828, -3.608430219669304, 0.8689979628581361, -6.862524463223146],
 		   [8.901372633919138, 0.6330199687857636, -2.9172618895780342, 3.6413659899039232, -1.172430484157588, -7.421804998309837, -1.146446609406727, -1.9245633104353126],
 		   [0.0491223598079511, -7.81299419433739, -2.424508749415626, 1.5903798159784621, 1.199257102582877, 4.247012669253758, -6.417410588884475, 0.31476943722478534]]
-
+print('IDCT CHEN IMPLMENTATION')
 print(IDCT_Chen(idctinput))
-print(matProd(idctinput,C_alpha2))
 def quantization(A, Q):
 	"""
 
@@ -620,13 +671,11 @@ dctmat=[
   [ 148,  155,  136,  155,  152,  147,  147,  136]
 ]
 
-print(DCT_Chen(dctmat))
-print(IDCT2(8,8,DCT_Chen(dctmat)))
+
 
 v=[8, 16, 24, 32, 40, 48, 56, 64]
 v2=[101.82, -51.54, -0.0, -5.39, 0.0, -1.61, -0.0, -0.41]
-print(sum([1 / math.sqrt(len(v2)) * v2[k] for k in range(len(v2))]))
-print(IDCT(v2))
+
 
 
 
@@ -645,10 +694,7 @@ C=[
 
 a=block_splitting(10,9,C)
 
-print(next(a))
-print(next(a))
-print(next(a))
-print(next(a))
+
 
 
 mat=[[2, 2, 2, 3, 3, 3, 4, 4, 4, 5],
@@ -664,8 +710,7 @@ mat=[[2, 2, 2, 3, 3, 3, 4, 4, 4, 5],
 
 
 
-print(img_RGB2YCbCr([['0 255 0', '0 0 255', '255 255 0'], ['255 255 255', '0 0 0', '0 0 0']]))
-print(img_YCbCr2RGB([[149.685, 29.07, 225.93], [255.0, 0.0, 0.0]], [[43.527680000000004, 255.5, 0.5], [128.0, 128.0, 128.0]], [[21.234560000000002, 107.26544, 148.73456], [127.99999999999999, 128.0, 128.0]]))
+
 
 
 
