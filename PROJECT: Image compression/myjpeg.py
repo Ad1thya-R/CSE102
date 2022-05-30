@@ -390,6 +390,7 @@ C_alpha=[
     [1/2*ncoeff8(i, j)[0]*math.cos(ncoeff8(i,j)[1]*math.pi/16) for j in range(8)]
     for i in range(8)
 ]
+C_coeff=[]
 v_before=[[0 for _ in range(8)] for _ in range(8)]
 v_final = [[0 for _ in range(8)] for _ in range(8)]
 
@@ -486,11 +487,15 @@ C_alpha_prov=[
  [0.09754516100806417, -0.27778511650980114, 0.4157348061512726, -0.4903926402016152, -0.09754516100806417, 0.27778511650980114, -0.4157348061512726, 0.4903926402016152]]
 
 ##pre-compute C_alpha2 matrix
-C_alpha2=[[1/2*C_alpha_prov[i][j]/abs(C_alpha_prov[i][j])*math.cos(C_alpha_prov[i][j]*math.pi/16) for j in range(8)] for i in range(8)]
+C_alpha2=[
+    [1/2*ncoeff8(i, j)[0]*math.cos(ncoeff8(i,j)[1]*math.pi/16) for j in range(8)]
+    for i in range(8)
+]
+C_coeff=[[ncoeff8(i,j)[0]*ncoeff8(i,j)[1] for j in range(8)] for i in range(8)]
 v_before2=[0 for _ in range(8)]
 v_final2 = [[0 for _ in range(8)] for _ in range(8)]
 print(C_alpha2)
-
+'''
 def IDCT_Chen(A):
 	"""
 
@@ -528,10 +533,10 @@ def IDCT_Chen(A):
 			   (7,5): v_hat[7]*C_alpha2[6][0],
 			   (7,7): v_hat[7]*C_alpha2[7][0]}
 
-		'''
+		"""
 		22 multiplications have been cached, 
 		will access them to compute components of v_out list
-		 '''
+		"""
 
 		v_out=[0 for _ in range(8)]
 		v_out[0]=cache[(0,4)]+cache[(2,2)]+cache[(4,4)]+cache[(6,6)]+cache[(1,1)]+cache[(3,3)]+cache[(5,5)]+cache[(7,7)]
@@ -550,9 +555,49 @@ def IDCT_Chen(A):
 	for i in range(8):
 		v_final2[i]=I_1DCT_Chen(v_mid[i])
 	return v_final2
+'''
+C_alpha=[
+    [1/2*ncoeff8(i, j)[0]*math.cos(ncoeff8(i,j)[1]*math.pi/16) for j in range(8)]
+    for i in range(8)
+]
+C_coeff=[[ncoeff8(i,j)[0]*ncoeff8(i,j)[1] for j in range(8)] for i in range(8)]
+v_before2=[0 for _ in range(8)]
+v_final2 = [[0 for _ in range(8)] for _ in range(8)]
 
+print(C_coeff)
+'''
+print(cache2)
+count+=1
+'''
+def IDCT_Chen2(A):
+	"""
 
-
+	  :param A:
+	  :return:
+	"""
+	cache2 ={}
+	def IDCT_Chen_1D(vhat):
+		v_out=[0 for _ in range(8)]
+		for c in range(8):
+			v_temp = 0
+			for j in range(8):
+				if (j, abs(C_coeff[j][c])) in cache2:
+					if C_coeff[j][c]>0:
+						v_temp += cache2[(j, abs(C_coeff[j][c]))]
+					else:
+						v_temp -= cache2[(j, abs(C_coeff[j][c]))]
+				else:
+					cache2[(j, abs(C_coeff[j][c]))] = vhat[j] * C_alpha[j][c]
+					v_temp += cache2[(j, abs(C_coeff[j][c]))]
+			v_out[c]=v_temp
+		cache2.clear()
+		return v_out
+	for r in range(8):
+		v_before2[r]=IDCT_Chen_1D(A[r])
+	v_mid2 = Transpose(v_before2)
+	for r in range(8):
+		v_final2[r]=IDCT_Chen_1D(v_mid2[r])
+	return v_final2
 #cache[(r,c,C_alpha2[r][c])]=A[r][c]*C_alpha2[r][c]
 
 idctinput=[[1210.0000000000002, -17.996927353373888, 14.77925623306755, -8.97955730010327, 23.250000000000004, -9.232556779784863, -13.969111825643534, -18.937081397078945],
@@ -565,7 +610,8 @@ idctinput=[[1210.0000000000002, -17.996927353373888, 14.77925623306755, -8.97955
 		   [0.0491223598079511, -7.81299419433739, -2.424508749415626, 1.5903798159784621, 1.199257102582877, 4.247012669253758, -6.417410588884475, 0.31476943722478534]]
 
 print('IDCT CHEN IMPLMENTATION')
-print(IDCT_Chen(idctinput))
+#print(IDCT_Chen(idctinput))
+print(IDCT_Chen2(idctinput))
 def quantization(A, Q):
 	"""
 
