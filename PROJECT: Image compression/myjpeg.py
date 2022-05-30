@@ -563,6 +563,7 @@ idctinput=[[1210.0000000000002, -17.996927353373888, 14.77925623306755, -8.97955
 		   [3.855633020558628, -2.2146896705631507, -18.16697022287876, 8.499840503342668, 8.268830646150828, -3.608430219669304, 0.8689979628581361, -6.862524463223146],
 		   [8.901372633919138, 0.6330199687857636, -2.9172618895780342, 3.6413659899039232, -1.172430484157588, -7.421804998309837, -1.146446609406727, -1.9245633104353126],
 		   [0.0491223598079511, -7.81299419433739, -2.424508749415626, 1.5903798159784621, 1.199257102582877, 4.247012669253758, -6.417410588884475, 0.31476943722478534]]
+
 print('IDCT CHEN IMPLMENTATION')
 print(IDCT_Chen(idctinput))
 def quantization(A, Q):
@@ -641,6 +642,69 @@ def Qmatrix(isY, phi):
 			for j in range(8):
 				quant[i][j]=math.ceil((50+round(500/phi)*quant[i][j])/100)
 	return quant
+
+#################################################################################
+
+def zigzag(A):
+	"""
+
+	:param A:
+	:return:
+	"""
+	m=len(A)
+	n=len(A[0])
+
+	for i in range(n+m-1):
+		if i%2 == 1:
+		#going down and left
+			if i<n:
+				x=0
+				y=i
+			else:
+				x=i-n+1
+				y=n-1
+			while x<m and y>=0:
+				yield A[x][y]
+				x+=1
+				y-=1
+		else:
+		# going up and right
+			if i < m:
+				x = i
+				y = 0
+			else:
+				x = m - 1
+				y = i - m + 1
+			while x >= 0 and y < n:
+				yield A[x][y]
+				x -= 1
+				y += 1
+
+
+matzigzag=[
+  [0, 0,  0,  1],
+  [0, 0,  7,  8],
+  [0,10, 0, 12]
+]
+g1=zigzag(matzigzag)
+
+
+def rle0(g):
+	"""
+
+	:param g: generator that yields integers
+	:return:
+	"""
+	zero_count=0
+	for i in g:
+		if i==0:
+			zero_count+=1
+		else:
+			yield zero_count, i
+			zero_count=0
+
+
+
 
 M8 = [
     [ncoeff8(i, j) for j in range(8)]
