@@ -21,9 +21,15 @@ def ppm_tokenize(stream):
 	:param stream: input stream such as g=open('file')
 	:return: iterator (generator) that outputs the data individually as tokens
 	"""
+	#We go through each line in the file
 	for line in stream:
+		#Remove the comments from the file in this manner (assume comments are made after typing the content on each line
 		line = line.partition('#')[0]
+
+		#Remove any space at the end of the string and split the elements of the line to obtain a list
 		line = line.rstrip().split()
+
+		#Check that the line is non-empty and iterate
 		if line:
 			for t in line:
 				yield t
@@ -37,6 +43,7 @@ def ppm_load(stream):
 	"""
 	g=ppm_tokenize(stream)
 	img=[]
+	#iterate through the first 4 elements of the stream to find width and height
 	for i in range(4):
 		curr=next(g)
 		if i==1:
@@ -44,6 +51,7 @@ def ppm_load(stream):
 		if i==2:
 			h = curr
 
+	#go through remaining elements in ppm_tokenize and add different colors as lists of [r,g,b] form
 	for i in range(int(h)):
 		temprow=[]
 		for j in range(int(w)):
@@ -55,6 +63,7 @@ def ppm_load(stream):
 def ppm_save(w: int, h: int, img: list, output) -> None:
 	"""takes an output stream output and
 	that saves the PPM image img whose size is w x h."""
+	#Write the data to produce a file of PPM format
 	output.write('P3\n')
 	output.write(f'{w} {h}\n')
 	output.write('255\n')
@@ -71,6 +80,7 @@ def RGB2YCbCr(r: int, g: int, b: int) -> tuple:
 	:int b: blue 0 to 255
 	:return: Y, Cb, Cr color format
 	"""
+	#Use the formulas relating YCbCr and RGB
 	Y = 0.299 * r + 0.587 * g + 0.114 * b
 	Cb = 128 - 0.168736 * r - 0.331264 * g + 0.5 * b
 	Cr = 128 + 0.5 * r - 0.418688 * g - 0.081312 * b
@@ -107,9 +117,11 @@ def img_RGB2YCbCr(img: list) -> list:
 	"""
 	h=len(img)
 	w=len(img[0])
+	#initialise matrices for Y, Cb, Cr
 	Y=[]
 	Cb=[]
 	Cr=[]
+	#Iterate through img and fill Y, Cb, Cr matrices using converter function above
 	for i, row in enumerate(img):
 		Y_row=[]
 		Cb_row = []
@@ -133,6 +145,7 @@ def img_YCbCr2RGB(Y: int, Cb: int, Cr: int) -> list:
 	:param Cr: 2D array of values of Cr for each pixel in image
 	:return: converts img back to pixels with RGB formatting from YCbCr
 	"""
+	#Use Y, Cb, Cr matrices to convert back to rgb pixels and fill a singl img matrix
 	img=[]
 	for i in range(len(Y)):
 		row=[]
@@ -142,7 +155,7 @@ def img_YCbCr2RGB(Y: int, Cb: int, Cr: int) -> list:
 		img.append(row)
 	return img
 
-def subsampling(w : int, h: int, C: list, b: int, a: int) -> list:
+def subsampling(w : int, h: int, C: list, a: int, b: int) -> list:
 	"""
 	:param w: width of image
 	:param h: height of image
@@ -163,21 +176,24 @@ def subsampling(w : int, h: int, C: list, b: int, a: int) -> list:
 	if a>w or b>h:
 		raise InvalidInput((a,b),"integers a and b s.t. a<=w and b<=h")
 
-	#Code for the function
+
 	img = []
-	for i in range(0, h, b):
+	#split matrix by height by stepping by a through the rows of the matrix
+	for i in range(0, h, a):
 		row = []
-		C_cut=C[i:i+b]
-		for j in range(0, w, a):
+		C_cut=C[i:i+a]
+		#split matrix by width by stepping by b through the columns of the cut-by-height matrix
+		for j in range(0, w, b):
 			temp_sum=0
 			for c in C_cut:
-				temp_sum+=sum(c[j:j+a])
-				temp_len=len(c[j:j+a])
-			row.append(temp_sum/(temp_len*len(C_cut)))
+				temp_sum+=sum(c[j:j+b])
+				temp_len=len(c[j:j+b])
+			row.append(round(temp_sum/(temp_len*len(C_cut))))
 		img.append(row)
 	return img
 
-
+#subsampling_sample_inp= [[12, 140, 125, 114, 71, 52, 44, 216, 16, 15, 47, 111, 119, 13, 101], [214, 112, 229, 142, 3, 81, 216, 174, 142, 79, 110, 172, 52, 47, 194], [49, 183, 176, 135, 22, 235, 63, 193, 40, 150, 185, 98, 35, 23, 116], [148, 40, 119, 51, 194, 142, 232, 186, 83, 189, 181, 107, 136, 36, 87], [125, 83, 236, 194, 138, 112, 166, 28, 117, 16, 161, 205, 137, 33, 108], [161, 108, 255, 202, 234, 73, 135, 71, 126, 134, 219, 204, 185, 112, 70], [252, 46, 24, 56, 78, 81, 216, 32, 197, 195, 239, 128, 5, 58, 136], [174, 57, 150, 222, 80, 232, 1, 134, 91, 54, 152, 101, 78, 191, 82], [0, 165, 250, 9, 57, 185, 157, 122, 29, 123, 40, 43, 248, 35, 64], [65, 243, 84, 135, 216, 108, 102, 159, 204, 191, 224, 231, 61, 126, 115], [32, 173, 10, 117, 112, 3, 36, 30, 117, 34, 16, 169, 36, 121, 142], [248, 109, 67, 242, 124, 242, 208, 97, 48, 49, 220, 181, 216, 210, 239], [27, 50, 31, 206, 173, 55, 127, 98, 97, 229, 71, 216, 93, 142, 236], [127, 38, 226, 50, 25, 7, 47, 121, 85, 208, 248, 246, 109, 205, 30], [84, 194, 1, 199, 135, 232, 146, 216, 249, 79, 97, 151, 111, 29, 31], [160, 29, 25, 244, 80, 29, 41, 95, 35, 34, 120, 206, 61, 126, 20], [41, 214, 161, 133, 104, 160, 122, 135, 202, 67, 153, 234, 161, 37, 4], [234, 51, 37, 109, 135, 67, 178, 35, 125, 189, 145, 80, 224, 154, 4], [153, 53, 68, 135, 59, 54, 79, 139, 144, 107, 175, 104, 135, 250, 128], [26, 47, 216, 141, 22, 1, 170, 66, 134, 82, 226, 218, 4, 57, 38], [76, 18, 189, 75, 220, 65, 21, 157, 186, 20, 183, 107, 127, 52, 181], [208, 79, 121, 83, 90, 211, 12, 91, 170, 210, 127, 136, 81, 55, 195], [19, 240, 113, 102, 235, 179, 156, 116, 114, 12, 98, 204, 168, 142, 35], [142, 179, 204, 169, 14, 59, 133, 91, 135, 19, 55, 222, 176, 160, 223], [59, 197, 97, 130, 22, 223, 0, 100, 186, 220, 35, 169, 160, 63, 153], [158, 209, 167, 206, 151, 65, 98, 215, 194, 89, 154, 207, 0, 155, 146], [107, 220, 164, 238, 226, 226, 109, 242, 86, 43, 145, 171, 47, 120, 158], [115, 101, 75, 12, 23, 125, 243, 37, 233, 212, 99, 196, 253, 204, 124], [75, 2, 54, 217, 112, 90, 237, 25, 127, 62, 233, 68, 237, 162, 226], [218, 228, 81, 243, 230, 132, 126, 141, 248, 122, 140, 225, 39, 146, 120], [139, 171, 163, 41, 70, 77, 118, 196, 78, 109, 32, 212, 208, 169, 238], [212, 31, 105, 215, 199, 10, 194, 244, 3, 180, 152, 199, 214, 112, 249], [112, 139, 223, 248, 14, 199, 172, 207, 84, 239, 65, 13, 201, 13, 42], [219, 69, 236, 93, 25, 133, 194, 167, 108, 232, 167, 172, 194, 142, 215], [129, 41, 240, 9, 26, 179, 114, 35, 20, 15, 126, 102, 10, 78, 122], [64, 242, 58, 111, 238, 131, 188, 85, 58, 83, 159, 55, 13, 159, 192], [203, 101, 38, 124, 52, 154, 61, 21, 177, 219, 189, 35, 174, 6, 215], [250, 54, 221, 185, 235, 78, 222, 90, 138, 247, 238, 223, 137, 165, 125], [44, 142, 230, 124, 237, 194, 172, 14, 253, 166, 93, 249, 108, 181, 132], [174, 143, 141, 5, 97, 43, 123, 208, 250, 123, 243, 251, 229, 8, 47], [150, 113, 207, 124, 156, 188, 242, 176, 217, 169, 180, 232, 138, 156, 128], [118, 61, 98, 161, 61, 94, 98, 110, 247, 141, 144, 51, 99, 151, 116], [184, 91, 154, 7, 64, 140, 23, 27, 149, 64, 251, 52, 6, 145, 240], [245, 225, 174, 94, 26, 129, 244, 58, 33, 205, 251, 37, 27, 77, 76], [155, 43, 127, 60, 213, 115, 194, 230, 226, 152, 219, 156, 30, 50, 106], [108, 135, 41, 80, 122, 88, 38, 80, 1, 209, 230, 240, 149, 16, 118], [147, 144, 232, 36, 119, 135, 101, 217, 58, 115, 76, 136, 72, 36, 30], [84, 157, 147, 224, 63, 239, 155, 206, 139, 252, 224, 41, 20, 221, 165], [128, 13, 46, 117, 10, 137, 20, 89, 240, 226, 142, 92, 223, 251, 46], [240, 178, 209, 170, 164, 53, 82, 168, 210, 253, 147, 205, 18, 232, 45], [161, 129, 165, 59, 206, 0, 236, 211, 27, 96, 185, 255, 226, 26, 104], [136, 67, 147, 224, 248, 62, 14, 122, 81, 159, 7, 208, 47, 115, 58], [236, 60, 78, 255, 149, 139, 212, 247, 241, 124, 233, 74, 196, 97, 69], [35, 141, 212, 174, 136, 1, 144, 152, 250, 76, 228, 247, 176, 170, 193], [233, 164, 96, 122, 196, 119, 210, 22, 162, 242, 195, 197, 77, 253, 18], [64, 169, 51, 225, 51, 233, 7, 73, 209, 79, 38, 240, 135, 173, 203], [41, 168, 194, 162, 249, 18, 35, 120, 147, 116, 46, 222, 50, 51, 227], [85, 153, 14, 23, 166, 28, 150, 183,191, 220, 74, 125, 210, 92, 87], [89, 40, 195, 123, 254, 73, 118, 236, 130, 235, 130, 4, 238, 147, 80], [37, 226, 176, 153, 217, 128, 233, 154, 101, 196, 247, 54, 121, 195, 183], [151, 151, 11, 202, 140, 4, 25, 254, 146, 117, 180, 112, 97, 128, 70], [49, 20, 158, 225, 17, 186, 67, 46, 151, 167, 212, 89, 102, 67, 187], [139, 84, 131, 246, 151, 173, 58, 239, 38, 72, 115, 203, 187, 46, 202], [7, 135, 63, 232, 188, 134, 195, 190, 55, 119, 241, 12, 167, 113, 32], [237, 154, 209, 59, 71, 23, 19, 155, 252, 59, 49, 120, 69, 198, 232], [189, 214, 79, 212, 50, 250, 208, 143, 16, 189, 111, 227, 227, 120, 185], [50, 188, 183, 31, 203, 141, 97, 62, 232, 46, 108, 10, 25, 170, 124], [64, 105, 35, 106, 110, 119, 168, 75, 1, 141, 74, 66, 128, 89, 56], [13, 67, 7, 183, 121, 165, 8, 89, 135, 26, 64, 215, 58, 32, 243], [229, 185, 55, 231, 113, 22, 154, 234, 15, 31, 245, 205, 218, 55, 251], [227, 37, 41, 164, 75, 33, 64, 140, 166, 195, 150, 232, 220, 50, 58], [110, 220, 231, 116, 211, 173, 232, 204, 212, 48, 160, 218, 160, 130, 191], [78, 242, 34, 46, 43, 47, 221, 49, 190, 66, 30, 168, 62, 210, 181], [216, 26, 147, 159, 180, 53, 108, 79, 246, 114, 55, 179, 188, 58, 142], [115, 219, 13, 136, 14, 92, 139, 158, 173, 179, 3, 92, 73, 205, 35], [72, 15, 46, 110, 192, 214, 232, 174, 80, 189, 159, 166, 43, 26, 79], [80, 25, 41, 139, 226, 217, 248, 226, 212, 139, 110, 58, 176, 220, 56], [145, 249, 157, 23, 112, 202, 28, 3, 104, 154, 108, 70, 130, 148, 167], [61, 3, 254, 220, 89, 66, 194, 117, 181, 36, 203, 21, 223, 9, 235], [39, 160, 219, 207, 213, 148, 58, 207, 10, 166, 87, 235, 185, 45, 223], [54, 124, 223, 205, 40, 202, 158, 173, 113, 170, 86, 39, 58, 99, 178], [179, 75, 120, 52, 74, 131, 101, 88, 78, 38, 90, 252, 237, 229, 165]]
+#print(subsampling(15,82,subsampling_sample_inp, 3,5))
 def extrapolate(w: int, h: int, C: list, b: int, a: int) -> list:
 	"""
 	:param w: width BEFORE sub sampling has been applied
@@ -199,13 +215,16 @@ def extrapolate(w: int, h: int, C: list, b: int, a: int) -> list:
 	for smallrow in C:
 		temp_row=[]
 		for pixel in smallrow:
+			#Multiply pixels by a to extrapolate
 			temp_row+=[pixel]*a
 			temp_row=temp_row[:w]
+		#Multiply the obtained row by b to obtain the a*b block that we desired
 		img.extend([temp_row]*b)
 	img=img[:h]
 	return img
+extrapolate_sample_inp=[[115, 114, 95], [153, 121, 132], [108, 123, 107], [132, 109, 154], [104, 133, 134], [117, 101, 115], [100, 95, 132], [133, 114, 138], [157, 140, 126], [119, 144, 165], [139, 141, 141], [120, 116, 127], [149, 147, 151], [121, 162, 145], [124, 133, 115], [123, 136, 118], [133, 137, 146], [153, 135, 141], [146, 119, 142], [130, 158, 132], [125, 116, 133], [140, 134, 140], [98, 100, 97], [150, 128, 170], [111, 128, 112], [109, 161, 114], [141, 133, 128], [100, 87, 195]]
 
-
+print(extrapolate(15,82,extrapolate_sample_inp,3,5))
 def block_splitting(w: int, h: int, C: list) -> list:
 	"""
 
@@ -217,7 +236,6 @@ def block_splitting(w: int, h: int, C: list) -> list:
 	for i in range(0, h, 8):
 		block = []
 		if i + 8 > h:
-			print('exception h')
 			temp_col = C[i:i + 8]
 			t = len(temp_col)
 			temp_col.extend([temp_col[t - 1]] * (8 - t))
@@ -227,7 +245,6 @@ def block_splitting(w: int, h: int, C: list) -> list:
 		for j in range(0, w, 8):
 			for c in C_cut:
 				if j + 8 > w:
-					print('exception w')
 					temp_row=c[j:j+8]
 					t=len(temp_row)
 					temp_row.extend([temp_row[t-1]]*(8-t))
